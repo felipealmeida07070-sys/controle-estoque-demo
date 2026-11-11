@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle de Estoque</title>
+  <link rel="stylesheet" href="estilo.css">
+  <script src="demo.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header><h1>Controle de Estoque</h1><span id="identidade"></span><p>Demonstração com dados fictícios · Somente leitura</p></header>
+  <main>
+    <p id="mensagem" role="status" hidden></p>
+    <form id="login">
+      <h2>Entrar</h2>
+      <label>Usuário <input name="login" autocomplete="username" required></label>
+      <label>Senha <input name="senha" type="password" autocomplete="current-password" required></label>
+      <button>Entrar</button>
+    </form>
+    <div id="sistema" hidden>
+      <nav aria-label="Menu do sistema">
+        <button data-tela="estoque">Estoque</button>
+        <button data-tela="movimentos">Movimentações</button>
+        <button data-tela="fornecedores" data-perfil="admin">Fornecedores</button>
+        <button data-tela="compras">Compras</button>
+        <button data-tela="relatorio" data-perfil="gestao">Financeiro</button>
+        <button id="sair">Sair</button>
+      </nav>
+      <section id="estoque">
+        <h2>Estoque atual</h2>
+        <p id="resumo"></p>
+        <div class="linha">
+          <label>Buscar produto <input id="busca" type="search" placeholder="Nome, SKU ou código de barras"></label>
+          <label>Ordenar por <select id="ordem"><option value="nome">Nome</option><option value="saidas">Mais saídas em 30 dias</option><option value="baixo">Estoque baixo primeiro</option></select></label>
+        </div>
+        <div id="lista-produtos" class="tabela"></div>
+        <form id="produto">
+          <h3>Cadastrar produto</h3>
+          <div class="campos">
+            <label>Nome <input name="nome" maxlength="150" required></label>
+            <label>SKU <input name="sku" maxlength="40" required></label>
+            <label>Código de barras <input name="codigo_barras" maxlength="40"></label>
+            <label>Preço de venda (R$) <input name="preco" type="number" min="0" step="0.01" required></label>
+            <label>Quantidade inicial <input name="saldo" type="number" min="0" value="0" required></label>
+            <label>Estoque mínimo <input name="estoque_minimo" type="number" min="0" value="0" required></label>
+            <label data-perfil="gestao">Custo unitário (R$) <input name="custo" type="number" min="0" step="0.01"></label>
+            <label data-perfil="gestao">Margem desejada (%) <input id="margem-desejada" type="number" min="0" max="99.99" step="0.01"></label>
+          </div>
+          <p data-perfil="gestao"><output id="margem">Margem de lucro —</output></p>
+          <button>Cadastrar produto</button>
+        </form>
+        <form id="importar" data-perfil="admin">
+          <h3>Importar produtos</h3>
+          <p><a href="/api/modelo">Baixar modelo CSV</a></p>
+          <label>Arquivo CSV <input type="file" accept=".csv,text/csv" required></label>
+          <button>Importar</button>
+        </form>
+      </section>
+      <section id="movimentos" hidden>
+        <h2>Movimentações</h2>
+        <form id="movimento">
+          <div class="campos">
+            <label>Operação <select name="tipo"><option value="entrada">Entrada</option><option value="venda">Venda</option><option value="saida">Outra saída</option></select></label>
+            <label>Produto por SKU <select name="sku" required></select></label>
+            <label>Quantidade <input name="quantidade" type="number" min="1" required></label>
+            <label data-tipo="entrada">Fornecedor <select name="fornecedor_id"></select></label>
+            <label data-tipo="entrada">Número da nota fiscal <input name="nota_fiscal" maxlength="60"></label>
+            <label data-tipo="entrada">Custo unitário do lote (R$) <input name="custo" type="number" min="0" step="0.01"></label>
+            <label data-tipo="venda">Pagamento <select name="pagamento"><option value="debito">Débito</option><option value="credito">Crédito</option><option value="pix">Pix</option><option value="vale">Vale</option></select></label>
+          </div>
+          <button>Registrar</button>
+        </form>
+        <h3>Histórico</h3>
+        <div id="historico" class="tabela"></div>
+      </section>
+      <section id="fornecedores" hidden>
+        <h2>Fornecedores</h2>
+        <form id="fornecedor">
+          <div class="campos">
+            <label>CNPJ <input name="cnpj" inputmode="numeric" maxlength="18" required></label>
+            <label>Razão social <input name="razao_social" maxlength="150" required></label>
+            <label>Nome fantasia <input name="nome_fantasia" maxlength="150" required></label>
+            <label>Telefone <input name="telefone" type="tel" maxlength="25" required></label>
+            <label>E-mail <input name="email" type="email" maxlength="254" required></label>
+          </div>
+          <button>Cadastrar fornecedor</button>
+        </form>
+        <div id="lista-fornecedores" class="tabela"></div>
+      </section>
+      <section id="compras" hidden>
+        <h2>Pedidos de compra</h2>
+        <form id="pedido" data-perfil="gestao">
+          <div class="campos">
+            <label>Fornecedor ativo <select name="fornecedor_id" required></select></label>
+            <label>Previsão de entrega <input name="entrega_prevista" type="date" required></label>
+            <label>Condições de pagamento <input name="condicoes_pagamento" maxlength="255" required></label>
+          </div>
+          <fieldset><legend>Produtos para repor até o estoque mínimo</legend><div id="reposicao"></div></fieldset>
+          <button>Gerar pedido</button>
+        </form>
+        <div id="lista-pedidos"></div>
+      </section>
+      <section id="relatorio" hidden>
+        <h2>Financeiro</h2>
+        <dl id="totais"></dl>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
